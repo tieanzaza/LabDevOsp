@@ -1,0 +1,30 @@
+name: CI with Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  docker-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for containers to be ready
+        run: |
+          echo "⏳ Waiting for containers..."
+          sleep 20  # Ideally replace this with a healthcheck
+
+      - name: Run test inside web container
+        run: docker compose exec web curl http://localhost:5000/api/users
+
+      - name: Shutdown Docker Compose
+        if: always()
+        run: docker compose down
